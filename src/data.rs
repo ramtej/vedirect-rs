@@ -148,7 +148,7 @@ pub struct MPPT {
     pub load_current: Ampere,
     pub load_output_state: bool,
     pub relay_state: Option<bool>,
-    pub off_reason: OffReason,
+    // pub off_reason: OffReason,
     pub yield_total: KiloWattHours,
     pub yield_today: KiloWattHours,
     pub max_power_today: Watt,
@@ -177,7 +177,7 @@ impl VEDirectData for MPPT {
             } else {
                 None
             },
-            off_reason: convert_off_reason(fields, "OR")?,
+            // off_reason: convert_off_reason(fields, "OR")?,
             yield_total: convert_watt(fields, "H19")?,
             yield_today: convert_watt(fields, "H20")?,
             max_power_today: convert_watt(fields, "H21")?,
