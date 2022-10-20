@@ -1,3 +1,5 @@
+use std::time::UNIX_EPOCH;
+
 use clap::Parser;
 use serialport::SerialPort;
 use vedirect::{Events, VEError};
@@ -6,9 +8,12 @@ struct Listener;
 
 impl Events<vedirect::MPPT> for Listener {
     fn on_complete_block(&mut self, block: vedirect::MPPT) {
-        // println!("Mapped data {:#?}", &block);
         println!(
-            "{};{};{};{};{};{};{};{};{};{};{};{};{};{:?}",
+            "{};{};{};{};{};{};{};{};{};{};{};{};{};{};{:?}",
+            std::time::SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs(),
             block.channel1_voltage,
             block.battery_current,
             block.panel_voltage,
@@ -24,23 +29,6 @@ impl Events<vedirect::MPPT> for Listener {
             block.firmware,
             block.tracker_mode,
         );
-        /*
-                   assert_eq!(data.channel1_voltage, 12.54);
-                  assert_eq!(data.battery_current, 0.04);
-                  assert_eq!(data.panel_voltage, 18.54);
-                  assert_eq!(data.panel_power, 5);
-                  assert_eq!(data.load_current, 0.3);
-                  assert_eq!(data.load_output_state, true);
-                  assert_eq!(data.yield_total, 144);
-                  assert_eq!(data.yield_today, 1);
-                  assert_eq!(data.yield_yesterday, 4);
-                  assert_eq!(data.max_power_today, 6);
-                  assert_eq!(data.max_power_yesterday, 14);
-                  assert_eq!(data.day_sequence, 16);
-                  assert_eq!(data.firmware, 159);
-                  assert_eq!(data.tracker_mode, TrackerOperationMode::MPPTrackerActive);
-
-        */
     }
 
     fn on_parse_error(&mut self, _error: VEError, _parse_buf: &[u8]) {}
@@ -52,7 +40,7 @@ pub fn record(mut port: Box<dyn SerialPort>) -> anyhow::Result<()> {
     let mut parser = vedirect::Parser::new(&mut listener);
     loop {
         let r = port.read(buf.as_mut_slice())?;
-        parser.feed(&buf[..r]); // <- FIX ME: handle errors
+        let _ = parser.feed(&buf[..r]);
         std::thread::sleep(std::time::Duration::from_millis(100));
     }
 }
